@@ -120,6 +120,9 @@ const ActiveTimerScreen: React.FC<ActiveTimerScreenProps> = ({
           <Text style={styles.roundLabel}>Round {currentRound} / {timerSettings.totalRounds}</Text>
         </View>
 
+        {/* Spacer to minimize empty space and push slider down slightly */}
+        <View style={{ flex: 1 }} />
+
         {/* Slide to Stop Control - iPhone style slider with integrated pause/play */}
         <SlideToStop 
           onStop={handleStop} 
@@ -141,38 +144,38 @@ const styles = StyleSheet.create({
   },
   content: {
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 20,
+    justifyContent: 'flex-start',
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 12,
     flex: 1,
   },
   timerContainer: {
-    width: screenWidth * 0.92,
-    height: screenHeight * 0.28,
+    width: screenWidth * 0.95,
+    height: screenHeight * 0.45,
     justifyContent: 'center',
     alignItems: 'center',
   },
   timerText: {
-    fontSize: screenHeight * 0.18,
+    fontSize: screenHeight * 0.28,
     fontWeight: 'bold',
     color: COLORS.BACKGROUND,
-    paddingHorizontal: screenWidth * 0.1,
-    paddingVertical: screenHeight * 0.045,
-    borderRadius: 24,
+    paddingHorizontal: screenWidth * 0.12,
+    paddingVertical: screenHeight * 0.08,
+    borderRadius: 28,
     fontVariant: ['tabular-nums'],
     textAlign: 'center',
   },
   roundsContainer: {
-    marginTop: 12,
-    marginBottom: 12,
-    width: screenWidth * 0.9,
+    marginTop: 8,
+    marginBottom: 8,
+    width: screenWidth * 0.94,
     alignItems: 'center',
-    gap: 12,
+    gap: 8,
   },
   roundLabel: {
     color: 'rgba(255, 255, 255, 0.9)',
-    fontSize: screenHeight * 0.022,
+    fontSize: screenHeight * 0.02,
     fontWeight: '600',
   },
 
