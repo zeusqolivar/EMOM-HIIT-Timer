@@ -1,5 +1,6 @@
 export enum TimerScene {
   PRESET_SELECTION = 'preset_selection',
+  PREPARATION = 'preparation',
   TIMER_ACTIVE = 'timer_active',
 }
 

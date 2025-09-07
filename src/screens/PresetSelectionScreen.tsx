@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -28,8 +28,13 @@ const PresetSelectionScreen: React.FC<PresetSelectionScreenProps> = ({
     currentlyPressedButtonId: null,
   });
   const [selectedTimeSplit, setSelectedTimeSplit] = useState<WorkRestSplit>(
-    WorkRestSplit.NONE
+    timerSettings.settings.selectedWorkRestSplit as WorkRestSplit
   );
+
+  // Sync selectedTimeSplit when timerSettings change
+  useEffect(() => {
+    setSelectedTimeSplit(timerSettings.settings.selectedWorkRestSplit as WorkRestSplit);
+  }, [timerSettings.settings.selectedWorkRestSplit]);
 
   const handleRoundSelect = (rounds: number) => {
     timerSettings.updateSettings({ 
@@ -110,14 +115,12 @@ const PresetSelectionScreen: React.FC<PresetSelectionScreenProps> = ({
 
           {/* Time Split Control */}
           <View style={styles.splitControlContainer}>
-            <CustomSegmentedControl
-              options={Object.values(WorkRestSplit)}
-              selectedOption={selectedTimeSplit}
-              onOptionSelect={handleTimeSplitChange}
-              renderOption={(option) => (
-                <Text style={styles.splitOptionText}>{option}</Text>
-              )}
-            />
+                      <CustomSegmentedControl
+            selection={selectedTimeSplit}
+            options={Object.values(WorkRestSplit)}
+            onSelectionChange={handleTimeSplitChange}
+            label={(option) => option}
+          />
           </View>
         </View>
       </ScrollView>
