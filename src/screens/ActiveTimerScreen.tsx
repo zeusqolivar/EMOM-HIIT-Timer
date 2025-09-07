@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { ActiveTimerSettings } from '../types/timer.types';
 import { COLORS } from '../constants/timer.constants';
+import GymProgressBar from '../components/GymProgressBar';
 import SlideToStop from '../components/SlideToStop';
 
 interface ActiveTimerScreenProps {
@@ -92,7 +93,8 @@ const ActiveTimerScreen: React.FC<ActiveTimerScreenProps> = ({
       slideAnim.setValue(0);
     });
     
-    setIsPaused(!isPaused);
+    // Use functional update to avoid stale state
+    setIsPaused(prev => !prev);
   };
 
   const handleStop = () => {
@@ -112,34 +114,10 @@ const ActiveTimerScreen: React.FC<ActiveTimerScreenProps> = ({
           </Text>
         </View>
 
-        {/* Rounds Display with semi-circle progress */}
+        {/* Rounds Display - Gym machine style progress bar */}
         <View style={styles.roundsContainer}>
-          <View style={styles.progressContainer}>
-            {/* Semi-circular progress segments */}
-            <View style={styles.progressSegments}>
-              {Array.from({ length: 12 }, (_, index) => {
-                const isCompleted = index < Math.floor((currentRound - 1) / timerSettings.totalRounds * 12);
-                const isCurrent = index === Math.floor((currentRound - 1) / timerSettings.totalRounds * 12);
-                return (
-                  <View
-                    key={index}
-                    style={[
-                      styles.progressSegment,
-                      {
-                        backgroundColor: isCompleted || isCurrent ? COLORS.PRIMARY : 'rgba(128, 128, 128, 0.3)',
-                        opacity: isCurrent ? 0.8 : 1,
-                      }
-                    ]}
-                  />
-                );
-              })}
-            </View>
-            
-            {/* Central rounds circle */}
-            <View style={styles.roundsCircle}>
-              <Text style={styles.roundsText}>{getRemainingRounds()}</Text>
-            </View>
-          </View>
+          <GymProgressBar totalRounds={timerSettings.totalRounds} currentRound={currentRound} segmented={false} />
+          <Text style={styles.roundLabel}>Round {currentRound} / {timerSettings.totalRounds}</Text>
         </View>
 
         {/* Slide to Stop Control - iPhone style slider with integrated pause/play */}
@@ -158,69 +136,44 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.BACKGROUND,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
   },
   content: {
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 20,
+    flex: 1,
   },
   timerContainer: {
-    marginBottom: 20,
-    width: screenWidth * 0.8,
-    height: screenHeight * 0.4,
+    width: screenWidth * 0.92,
+    height: screenHeight * 0.28,
     justifyContent: 'center',
     alignItems: 'center',
   },
   timerText: {
-    fontSize: screenHeight * 0.15,
+    fontSize: screenHeight * 0.18,
     fontWeight: 'bold',
     color: COLORS.BACKGROUND,
     paddingHorizontal: screenWidth * 0.1,
-    paddingVertical: screenHeight * 0.05,
-    borderRadius: screenHeight * 0.02,
+    paddingVertical: screenHeight * 0.045,
+    borderRadius: 24,
     fontVariant: ['tabular-nums'],
     textAlign: 'center',
   },
   roundsContainer: {
-    marginBottom: 40,
-  },
-  progressContainer: {
-    position: 'relative',
+    marginTop: 12,
+    marginBottom: 12,
+    width: screenWidth * 0.9,
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 12,
   },
-  progressSegments: {
-    position: 'absolute',
-    width: screenWidth * 0.6,
-    height: screenWidth * 0.3,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    paddingHorizontal: screenWidth * 0.1,
-  },
-  progressSegment: {
-    width: screenWidth * 0.02,
-    height: screenWidth * 0.08,
-    borderRadius: screenWidth * 0.01,
-  },
-  roundsCircle: {
-    width: screenWidth * 0.4,
-    height: screenWidth * 0.4,
-    borderRadius: screenWidth * 0.2,
-    backgroundColor: COLORS.PRIMARY,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 4,
-    borderColor: COLORS.BACKGROUND,
-    zIndex: 1,
-  },
-  roundsText: {
-    fontSize: screenWidth * 0.15,
-    fontWeight: 'bold',
-    color: COLORS.BACKGROUND,
-    fontVariant: ['tabular-nums'],
+  roundLabel: {
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: screenHeight * 0.022,
+    fontWeight: '600',
   },
 
 });

@@ -7,7 +7,6 @@ import {
   StyleSheet,
   Dimensions,
   Vibration,
-  TouchableOpacity,
 } from 'react-native';
 import { COLORS } from '../constants/timer.constants';
 
@@ -19,10 +18,13 @@ interface SlideToStopProps {
 }
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-const SLIDER_WIDTH = screenWidth * 0.8;
-const SLIDER_HEIGHT = screenHeight * 0.08;
-const THUMB_SIZE = SLIDER_HEIGHT * 0.8;
-const SLIDE_THRESHOLD = SLIDER_WIDTH - THUMB_SIZE - 20; // Leave some padding
+const SLIDER_WIDTH = screenWidth * 0.9;
+const SLIDER_HEIGHT = screenHeight * 0.07;
+const THUMB_HEIGHT = SLIDER_HEIGHT * 0.74;
+const THUMB_WIDTH = THUMB_HEIGHT * 1.6; // rounded rectangle like a small pill
+// Ratios to match SwiftUI reference
+const STOP_THRESHOLD_RATIO = 0.35;
+const MAX_DRAG_RATIO = 0.7;
 
 const SlideToStop: React.FC<SlideToStopProps> = ({ 
   onStop, 
@@ -33,6 +35,10 @@ const SlideToStop: React.FC<SlideToStopProps> = ({
   const translateX = useRef(new Animated.Value(0)).current;
   const [isSliding, setIsSliding] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isPastStop, setIsPastStop] = useState(false);
+
+  const stopThreshold = SLIDER_WIDTH * STOP_THRESHOLD_RATIO;
+  const maxDrag = SLIDER_WIDTH * MAX_DRAG_RATIO;
 
   const panResponder = useRef(
     PanResponder.create({
@@ -49,16 +55,17 @@ const SlideToStop: React.FC<SlideToStopProps> = ({
       onPanResponderMove: (_, gestureState) => {
         if (disabled || isCompleted) return;
         
-        const newValue = Math.max(0, Math.min(gestureState.dx, SLIDE_THRESHOLD));
+        const newValue = Math.max(0, Math.min(gestureState.dx, maxDrag));
         translateX.setValue(newValue);
+        setIsPastStop(newValue >= stopThreshold);
       },
       onPanResponderRelease: (_, gestureState) => {
         if (disabled || isCompleted) return;
         
-        const { dx, dy, vx } = gestureState;
+        const { dx, dy } = gestureState;
         
         // If it was more of a tap than a drag, handle as tap
-        if (Math.abs(dx) < 10 && Math.abs(dy) < 10 && Math.abs(vx) < 0.5) {
+        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) {
           setIsSliding(false);
           onPauseToggle();
           Vibration.vibrate(10);
@@ -67,13 +74,13 @@ const SlideToStop: React.FC<SlideToStopProps> = ({
         
         setIsSliding(false);
         
-        if (dx >= SLIDE_THRESHOLD) {
+        if (dx >= stopThreshold) {
           // Slide completed - trigger stop
           setIsCompleted(true);
           Vibration.vibrate([10, 50, 10]);
           
           Animated.spring(translateX, {
-            toValue: SLIDE_THRESHOLD,
+            toValue: maxDrag,
             useNativeDriver: false,
             tension: 100,
             friction: 8,
@@ -90,6 +97,7 @@ const SlideToStop: React.FC<SlideToStopProps> = ({
             tension: 100,
             friction: 8,
           }).start();
+          setIsPastStop(false);
         }
       },
     })
@@ -112,10 +120,22 @@ const SlideToStop: React.FC<SlideToStopProps> = ({
           ]}
           {...panResponder.panHandlers}
         >
-          <View style={styles.thumb}>
-            <Text style={styles.thumbIcon}>
-              {isCompleted ? '■' : isPaused ? '▶' : '⏸'}
-            </Text>
+          <View style={[
+            styles.thumb,
+            { backgroundColor: isPastStop ? '#FF3B30' : COLORS.PRIMARY }
+          ]}>
+            {isPaused ? (
+              // Play symbol: right-pointing triangle
+              <View style={styles.iconContainer}>
+                <View style={styles.playTriangle} />
+              </View>
+            ) : (
+              // Pause symbol: two vertical bars
+              <View style={[styles.iconContainer, { flexDirection: 'row' }]}>
+                <View style={styles.pauseBar} />
+                <View style={styles.pauseBar} />
+              </View>
+            )}
           </View>
         </Animated.View>
       </View>
@@ -131,7 +151,7 @@ const styles = StyleSheet.create({
   track: {
     width: SLIDER_WIDTH,
     height: SLIDER_HEIGHT,
-    borderRadius: SLIDER_HEIGHT / 2,
+    borderRadius: 100,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -146,14 +166,14 @@ const styles = StyleSheet.create({
   thumbContainer: {
     position: 'absolute',
     left: 8,
-    width: THUMB_SIZE,
-    height: THUMB_SIZE,
-    borderRadius: THUMB_SIZE / 2,
+    width: THUMB_WIDTH,
+    height: THUMB_HEIGHT,
+    borderRadius: THUMB_HEIGHT / 2,
   },
   thumb: {
-    width: THUMB_SIZE,
-    height: THUMB_SIZE,
-    borderRadius: THUMB_SIZE / 2,
+    width: THUMB_WIDTH,
+    height: THUMB_HEIGHT,
+    borderRadius: THUMB_HEIGHT / 2,
     backgroundColor: COLORS.PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
@@ -166,10 +186,27 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 6,
   },
-  thumbIcon: {
-    fontSize: screenHeight * 0.025,
-    color: '#FFFFFF',
-    fontWeight: '600',
+  iconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pauseBar: {
+    width: THUMB_HEIGHT * 0.14,
+    height: THUMB_HEIGHT * 0.5,
+    borderRadius: THUMB_HEIGHT * 0.04,
+    backgroundColor: '#000000',
+    marginHorizontal: THUMB_HEIGHT * 0.06,
+  },
+  playTriangle: {
+    width: 0,
+    height: 0,
+    borderTopWidth: THUMB_HEIGHT * 0.18,
+    borderBottomWidth: THUMB_HEIGHT * 0.18,
+    borderLeftWidth: THUMB_HEIGHT * 0.32,
+    borderTopColor: 'transparent',
+    borderBottomColor: 'transparent',
+    borderLeftColor: '#000000',
+    marginLeft: THUMB_HEIGHT * 0.05,
   },
 });
 
