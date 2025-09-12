@@ -12,6 +12,7 @@ import { TIMER_CONSTANTS, COLORS, WORK_REST_SPLIT_CONFIG } from '../constants/ti
 import { useTimerSettings } from '../hooks/useTimerSettings';
 import CustomSegmentedControl from '../components/CustomSegmentedControl';
 import RoundButton from '../components/RoundButton';
+import SettingsSheet from '../components/SettingsSheet';
 
 interface PresetSelectionScreenProps {
   timerSettings: ReturnType<typeof useTimerSettings>;
@@ -30,6 +31,7 @@ const PresetSelectionScreen: React.FC<PresetSelectionScreenProps> = ({
   const [selectedTimeSplit, setSelectedTimeSplit] = useState<WorkRestSplit>(
     timerSettings.settings.selectedWorkRestSplit as WorkRestSplit
   );
+  const [showSettings, setShowSettings] = useState(false);
 
   // Sync selectedTimeSplit when timerSettings change
   useEffect(() => {
@@ -66,6 +68,26 @@ const PresetSelectionScreen: React.FC<PresetSelectionScreenProps> = ({
     setButtonInteractionState({ currentlyPressedButtonId: null });
   };
 
+  const handleSettingsPress = () => {
+    setShowSettings(true);
+  };
+
+  const handleSettingsClose = () => {
+    setShowSettings(false);
+  };
+
+  const handlePreparationTimeChange = (time: number) => {
+    timerSettings.updateSettings({ preparationTime: time });
+  };
+
+  const handleCooldownTimeChange = (time: number) => {
+    timerSettings.updateSettings({ cooldownTime: time });
+  };
+
+  const handleSpeedUpTimerChange = (enabled: boolean) => {
+    timerSettings.updateSettings({ speedUpTimer: enabled });
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -77,7 +99,7 @@ const PresetSelectionScreen: React.FC<PresetSelectionScreenProps> = ({
               {TIMER_CONSTANTS.UPGRADE_BUTTON_LABEL}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.settingsButton}>
+          <TouchableOpacity style={styles.settingsButton} onPress={handleSettingsPress}>
             <Text style={styles.settingsButtonText}>⋯</Text>
           </TouchableOpacity>
         </View>
@@ -124,6 +146,18 @@ const PresetSelectionScreen: React.FC<PresetSelectionScreenProps> = ({
           </View>
         </View>
       </ScrollView>
+
+      {/* Settings Sheet */}
+      <SettingsSheet
+        visible={showSettings}
+        onClose={handleSettingsClose}
+        preparationTime={timerSettings.settings.preparationTime}
+        cooldownTime={timerSettings.settings.cooldownTime}
+        speedUpTimer={timerSettings.settings.speedUpTimer}
+        onPreparationTimeChange={handlePreparationTimeChange}
+        onCooldownTimeChange={handleCooldownTimeChange}
+        onSpeedUpTimerChange={handleSpeedUpTimerChange}
+      />
     </View>
   );
 };

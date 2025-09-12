@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -68,21 +68,23 @@ const ActiveTimerScreen: React.FC<ActiveTimerScreenProps> = ({
     return () => clearInterval(interval);
   }, [timerSettings, currentRound, isWorkPhase, onTimerFinish, isPaused]);
 
-  const formatTime = (seconds: number) => {
+  const formatTime = useCallback((seconds: number) => {
     const displaySeconds = seconds === 0 ? 60 : seconds;
     return displaySeconds.toString().padStart(2, '0');
-  };
+  }, []);
 
-  const getRemainingRounds = () => {
+  const formattedTime = useMemo(() => formatTime(currentTime), [currentTime, formatTime]);
+
+  const getRemainingRounds = useCallback(() => {
     if (timerSettings.isInfiniteMode) {
       return (currentRound + 1).toString().padStart(2, '0');
     } else {
       const remaining = Math.max(0, timerSettings.totalRounds - currentRound);
       return remaining.toString().padStart(2, '0');
     }
-  };
+  }, [timerSettings.isInfiniteMode, timerSettings.totalRounds, currentRound]);
 
-  const handlePauseResume = () => {
+  const handlePauseResume = useCallback(() => {
     // Add slide animation
     Animated.spring(slideAnim, {
       toValue: 1,
@@ -95,23 +97,25 @@ const ActiveTimerScreen: React.FC<ActiveTimerScreenProps> = ({
     
     // Use functional update to avoid stale state
     setIsPaused(prev => !prev);
-  };
+  }, [slideAnim]);
 
-  const handleStop = () => {
+  const handleStop = useCallback(() => {
     onTimerStop();
-  };
+  }, [onTimerStop]);
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
         {/* Timer Display - Much larger like native */}
         <View style={styles.timerContainer}>
-          <Text style={[
-            styles.timerText,
-            { backgroundColor: isWorkPhase ? COLORS.PRIMARY : '#FF4444' }
-          ]}>
-            {formatTime(currentTime)}
-          </Text>
+          <View
+            style={[
+              styles.timerBox,
+              { backgroundColor: isWorkPhase ? COLORS.PRIMARY : '#FF4444' },
+            ]}
+          >
+            <Text style={styles.timerText}>{formattedTime}</Text>
+          </View>
         </View>
 
         {/* Rounds Display - Gym machine style progress bar */}
@@ -156,13 +160,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  timerBox: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 4,
+    borderColor: '#FFD700', // Yellow border
+  },
   timerText: {
     fontSize: screenHeight * 0.28,
     fontWeight: 'bold',
     color: COLORS.BACKGROUND,
-    paddingHorizontal: screenWidth * 0.12,
-    paddingVertical: screenHeight * 0.08,
-    borderRadius: 28,
+    lineHeight: screenHeight * 0.28,
     fontVariant: ['tabular-nums'],
     textAlign: 'center',
   },

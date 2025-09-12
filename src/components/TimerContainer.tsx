@@ -14,7 +14,7 @@ const TimerContainer: React.FC = () => {
     timerSettings.updateSettings({ numberOfRounds: rounds });
     
     // Check if there's preparation time
-    if (timerSettings.preparationTime > 0) {
+    if (timerSettings.settings.preparationTime > 0) {
       setCurrentScene(TimerScene.PREPARATION);
     } else {
       setCurrentScene(TimerScene.TIMER_ACTIVE);
@@ -46,7 +46,7 @@ const TimerContainer: React.FC = () => {
         />
       ) : currentScene === TimerScene.PREPARATION ? (
         <PreparationScreen
-          preparationTime={timerSettings.preparationTime}
+          preparationTime={timerSettings.settings.preparationTime}
           onPreparationComplete={handlePreparationComplete}
           onCancel={handlePreparationCancel}
         />

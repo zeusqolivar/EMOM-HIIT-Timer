@@ -29,16 +29,19 @@ const PreparationScreen: React.FC<PreparationScreenProps> = ({
     }
 
     let timeLeft = preparationTime;
+    const startTime = Date.now();
+    
     const interval = setInterval(() => {
-      timeLeft -= 1;
+      const elapsed = (Date.now() - startTime) / 1000;
+      timeLeft = Math.max(0, preparationTime - elapsed);
       
       if (timeLeft > 3) {
         // Show countdown numbers
-        setCurrentValue(timeLeft);
+        setCurrentValue(Math.ceil(timeLeft));
         setProgress(1 - (timeLeft / preparationTime));
       } else if (timeLeft > 0) {
         // Show 3, 2, 1
-        setCurrentValue(timeLeft);
+        setCurrentValue(Math.ceil(timeLeft));
         setProgress(1 - (timeLeft / preparationTime));
       } else {
         // Show "Ready"
@@ -49,8 +52,9 @@ const PreparationScreen: React.FC<PreparationScreenProps> = ({
         setTimeout(() => {
           onPreparationComplete();
         }, 1000);
+        clearInterval(interval);
       }
-    }, 1000);
+    }, 50); // Update more frequently for smoother animation
 
     return () => clearInterval(interval);
   }, [preparationTime, onPreparationComplete]);

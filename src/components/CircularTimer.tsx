@@ -26,11 +26,11 @@ const CircularTimer: React.FC<CircularTimerProps> = ({
   progress,
   onCancel,
   onComplete,
-  size = 300,
-  strokeWidth = 15,
+  size = 280,
+  strokeWidth = 20,
 }) => {
   const [showReady, setShowReady] = useState(true);
-  const [circleProgress, setCircleProgress] = useState(0);
+  const [animatedProgress, setAnimatedProgress] = useState(0);
   
   const scaleAnim = useRef(new Animated.Value(1.0)).current;
   const opacityAnim = useRef(new Animated.Value(1.0)).current;
@@ -39,9 +39,29 @@ const CircularTimer: React.FC<CircularTimerProps> = ({
   const circumference = 2 * Math.PI * radius;
 
   useEffect(() => {
-    // Update circle progress with animation
-    setCircleProgress(progress);
-  }, [progress]);
+    // Animate in discrete steps (one second at a time)
+    const startTime = Date.now();
+    const startProgress = animatedProgress;
+    const targetProgress = progress;
+    const duration = 800; // Longer duration for each step
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progressRatio = Math.min(elapsed / duration, 1);
+      
+      // Easing function for smooth step animation
+      const easeOutCubic = 1 - Math.pow(1 - progressRatio, 3);
+      const currentProgress = startProgress + (targetProgress - startProgress) * easeOutCubic;
+      
+      setAnimatedProgress(currentProgress);
+      
+      if (progressRatio < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+    
+    requestAnimationFrame(animate);
+  }, [progress, animatedProgress]);
 
   useEffect(() => {
     if (value !== undefined && value !== null) {
@@ -94,11 +114,14 @@ const CircularTimer: React.FC<CircularTimerProps> = ({
     if (showReady) {
       return 'Ready';
     }
+    if (value === 0) {
+      return 'Go';
+    }
     return value.toString();
   };
 
   const strokeDasharray = circumference;
-  const strokeDashoffset = circumference - (circleProgress * circumference);
+  const strokeDashoffset = circumference - (animatedProgress * circumference);
 
   return (
     <TouchableOpacity 
@@ -107,17 +130,20 @@ const CircularTimer: React.FC<CircularTimerProps> = ({
       activeOpacity={1}
     >
       <View style={styles.timerContainer}>
+        {/* Background circle */}
         <Svg width={size} height={size} style={styles.svg}>
-          {/* Background circle */}
           <Circle
             cx={size / 2}
             cy={size / 2}
             r={radius}
-            stroke="rgba(128, 128, 128, 0.3)"
+            stroke="rgba(128, 128, 128, 0.2)"
             strokeWidth={strokeWidth}
             fill="transparent"
           />
-          {/* Progress circle */}
+        </Svg>
+        
+        {/* Progress circle with animation */}
+        <Svg width={size} height={size} style={[styles.svg, { position: 'absolute' }]}>
           <Circle
             cx={size / 2}
             cy={size / 2}
@@ -170,10 +196,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   timerText: {
-    fontSize: 72,
+    fontSize: 80,
     fontWeight: 'bold',
     color: COLORS.PRIMARY,
     textAlign: 'center',
+    fontVariant: ['tabular-nums'],
   },
 });
 

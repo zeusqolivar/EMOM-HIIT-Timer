@@ -17,6 +17,9 @@ export interface TimerConfiguration {
   restIntervalSeconds: number;
   selectedWorkRestSplit: string;
   availablePresetRounds: number[];
+  preparationTime: number;
+  cooldownTime: number;
+  speedUpTimer: boolean;
 }
 
 export interface ActiveTimerSettings {
