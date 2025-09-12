@@ -7,6 +7,8 @@ brew install cocoapods
 
 echo "===== Installing Node.js ====="
 brew install node@21
+# Ensure node is on PATH on Xcode Cloud runners
+export PATH="/opt/homebrew/opt/node@21/bin:$PATH"
 
 echo "===== Installing yarn ====="
 brew install yarn
@@ -22,7 +24,8 @@ yarn install
 
 echo "===== Running pod install ====="
 cd ios
-pod install
+pod repo update
+pod install --verbose
 
 # Verify pod installation
 echo "===== Verifying installation ====="
