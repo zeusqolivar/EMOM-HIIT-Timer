@@ -166,8 +166,6 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 4,
-    borderColor: '#FFD700', // Yellow border
   },
   timerText: {
     fontSize: screenHeight * 0.28,

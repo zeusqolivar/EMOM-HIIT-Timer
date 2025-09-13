@@ -75,7 +75,7 @@ const SettingsSheet: React.FC<SettingsSheetProps> = ({
                   {
                     backgroundColor: preparationTime === option.value 
                       ? COLORS.PRIMARY 
-                      : 'rgba(255, 204, 0, 0.2)',
+                      : 'rgba(255, 107, 53, 0.2)',
                   },
                 ]}
                 onPress={() => onPreparationTimeChange(option.value)}
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     maxHeight: screenHeight * 0.8,
     borderWidth: 3,
-    borderColor: '#FFD700', // Yellow border
+    borderColor: '#FF6B35', // Orange border
   },
   header: {
     flexDirection: 'row',
