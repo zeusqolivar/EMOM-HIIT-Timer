@@ -28,12 +28,12 @@ export const WORK_REST_SPLIT_CONFIG = {
 } as const;
 
 export const COLORS = {
-  PRIMARY: '#FFD700',
+  PRIMARY: '#FF6B35',
   BACKGROUND: '#000000',
   TEXT: '#FFFFFF',
-  ACCENT: 'rgba(255, 215, 0, 0.3)',
-  BUTTON_PRESSED: 'rgba(255, 215, 0, 0.3)',
-  SEGMENT_BACKGROUND: 'rgba(255, 215, 0, 0.2)',
-  SEGMENT_SELECTED: '#FFD700',
-  SEGMENT_UNSELECTED: 'rgba(255, 215, 0, 0.6)',
+  ACCENT: 'rgba(255, 107, 53, 0.3)',
+  BUTTON_PRESSED: 'rgba(255, 107, 53, 0.3)',
+  SEGMENT_BACKGROUND: 'rgba(255, 107, 53, 0.2)',
+  SEGMENT_SELECTED: '#FF6B35',
+  SEGMENT_UNSELECTED: 'rgba(255, 107, 53, 0.6)',
 } as const;

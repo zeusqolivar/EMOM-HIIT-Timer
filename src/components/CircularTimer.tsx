@@ -8,6 +8,7 @@ import {
   Animated,
 } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 import { COLORS } from '../constants/timer.constants';
 
 interface CircularTimerProps {
@@ -17,6 +18,7 @@ interface CircularTimerProps {
   onComplete?: () => void;
   size?: number;
   strokeWidth?: number;
+  showReady?: boolean;
 }
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -28,50 +30,27 @@ const CircularTimer: React.FC<CircularTimerProps> = ({
   onComplete,
   size = 280,
   strokeWidth = 20,
+  showReady = true,
 }) => {
-  const [showReady, setShowReady] = useState(true);
-  const [animatedProgress, setAnimatedProgress] = useState(0);
-  
   const scaleAnim = useRef(new Animated.Value(1.0)).current;
   const opacityAnim = useRef(new Animated.Value(1.0)).current;
+  const progressAnim = useRef(new Animated.Value(0)).current;
 
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
 
   useEffect(() => {
-    // Animate in discrete steps (one second at a time)
-    const startTime = Date.now();
-    const startProgress = animatedProgress;
-    const targetProgress = progress;
-    const duration = 800; // Longer duration for each step
-
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      const progressRatio = Math.min(elapsed / duration, 1);
-      
-      // Easing function for smooth step animation
-      const easeOutCubic = 1 - Math.pow(1 - progressRatio, 3);
-      const currentProgress = startProgress + (targetProgress - startProgress) * easeOutCubic;
-      
-      setAnimatedProgress(currentProgress);
-      
-      if (progressRatio < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
-    
-    requestAnimationFrame(animate);
-  }, [progress, animatedProgress]);
-
-  useEffect(() => {
-    if (value !== undefined && value !== null) {
-      setShowReady(false);
-    }
-  }, [value]);
+    // Animate progress with easeInOut over 0.7 seconds (matching SwiftUI)
+    Animated.timing(progressAnim, {
+      toValue: progress,
+      duration: 700, // Match SwiftUI .easeInOut(duration: 0.7)
+      useNativeDriver: false, // SVG properties can't use native driver
+    }).start();
+  }, [progress, progressAnim]);
 
   useEffect(() => {
     if (showReady) {
-      // Ready animation sequence
+      // Ready animation sequence - fade out and back in (matching SwiftUI)
       Animated.timing(opacityAnim, {
         toValue: 1.0,
         duration: 500,
@@ -94,34 +73,48 @@ const CircularTimer: React.FC<CircularTimerProps> = ({
         }, 300);
       }, 700);
     } else {
-      // Countdown animation sequence
+      // Reset opacity for countdown
+      Animated.timing(opacityAnim, {
+        toValue: 1.0,
+        duration: 100,
+        useNativeDriver: true,
+      }).start();
+      
+      // Countdown animation sequence - scale up and down (matching SwiftUI spring)
       Animated.spring(scaleAnim, {
         toValue: 1.5,
+        tension: 100,
+        friction: 5,
         useNativeDriver: true,
       }).start();
 
       setTimeout(() => {
         Animated.spring(scaleAnim, {
           toValue: 1.0,
-          damping: 0.5,
+          tension: 100,
+          friction: 5,
           useNativeDriver: true,
         }).start();
       }, 150);
     }
-  }, [progress, showReady]);
+  }, [value, showReady]);
 
   const getDisplayText = () => {
     if (showReady) {
       return 'Ready';
     }
     if (value === 0) {
-      return 'Go';
+      return 'GO';
     }
     return value.toString();
   };
 
   const strokeDasharray = circumference;
-  const strokeDashoffset = circumference - (animatedProgress * circumference);
+  // Use Animated.Value for smooth SVG animation
+  const animatedStrokeDashoffset = progressAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [circumference, 0],
+  });
 
   return (
     <TouchableOpacity 
@@ -144,7 +137,7 @@ const CircularTimer: React.FC<CircularTimerProps> = ({
         
         {/* Progress circle with animation */}
         <Svg width={size} height={size} style={[styles.svg, { position: 'absolute' }]}>
-          <Circle
+          <AnimatedCircle
             cx={size / 2}
             cy={size / 2}
             r={radius}
@@ -152,7 +145,7 @@ const CircularTimer: React.FC<CircularTimerProps> = ({
             strokeWidth={strokeWidth}
             fill="transparent"
             strokeDasharray={strokeDasharray}
-            strokeDashoffset={strokeDashoffset}
+            strokeDashoffset={animatedStrokeDashoffset as any}
             strokeLinecap="round"
             transform={`rotate(-90 ${size / 2} ${size / 2})`}
           />
