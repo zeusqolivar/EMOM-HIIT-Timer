@@ -15,11 +15,13 @@ else
   echo "CocoaPods already installed"
 fi
 
-if ! brew list node@21 >/dev/null 2>&1; then
-  brew install node@21
+if ! brew list node >/dev/null 2>&1; then
+  brew install node
+else
+  echo "Node already installed"
 fi
-# Ensure Node@21 is on PATH on Xcode Cloud runners (both Homebrew prefixes)
-export PATH="/opt/homebrew/opt/node@21/bin:/usr/local/opt/node@21/bin:$PATH"
+# Ensure Node is on PATH on Xcode Cloud runners (both Homebrew prefixes)
+export PATH="/opt/homebrew/opt/node/bin:/usr/local/opt/node/bin:$PATH"
 
 if ! brew list yarn >/dev/null 2>&1; then
   brew install yarn
