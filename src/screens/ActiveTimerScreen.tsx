@@ -117,7 +117,7 @@ const ActiveTimerScreen: React.FC<ActiveTimerScreenProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        {/* Timer Display - Compact */}
+        {/* Timer Display - Big and Dominant */}
         <View style={styles.timerContainer}>
           <View
             style={[
@@ -157,33 +157,31 @@ const ActiveTimerScreen: React.FC<ActiveTimerScreenProps> = ({
             </Text>
           </View>
 
-          {/* Phase Progress - Gym Equipment Style */}
+          {/* Phase Progress - Smooth Animation */}
           <View style={styles.phaseProgressSection}>
             <Text style={styles.sectionLabel}>
               {isWorkPhase ? 'Work Phase' : 'Rest Phase'}
             </Text>
-            <View style={styles.gymProgressBar}>
-              {Array.from({ length: 10 }, (_, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.progressSegment,
-                    {
-                      backgroundColor: index < Math.round(currentProgress * 10)
-                        ? (isWorkPhase ? COLORS.PRIMARY : '#FF4444')
-                        : 'rgba(128, 128, 128, 0.3)',
-                    }
-                  ]}
-                />
-              ))}
+            <View style={styles.smoothProgressBar}>
+              <View 
+                style={[
+                  styles.smoothProgressFill, 
+                  { 
+                    width: `${currentProgress * 100}%`,
+                    backgroundColor: isWorkPhase ? COLORS.PRIMARY : '#FF4444'
+                  }
+                ]} 
+              />
             </View>
             <Text style={styles.phaseInfoText}>
               {Math.round(currentProgress * 100)}%
             </Text>
           </View>
         </View>
+      </View>
 
-        {/* Slide to Stop Control */}
+      {/* Slide to Stop Control - Lock Screen Style at Bottom */}
+      <View style={styles.lockScreenContainer}>
         <SlideToStop 
           onStop={handleStop} 
           onPauseToggle={handlePauseResume}
@@ -204,17 +202,23 @@ const styles = StyleSheet.create({
   },
   content: {
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     paddingHorizontal: 16,
     paddingTop: 20,
-    paddingBottom: 20,
+    paddingBottom: 0,
     flex: 1,
   },
+  lockScreenContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 20,
+    paddingTop: 0,
+  },
   timerContainer: {
-    width: screenWidth * 0.8,
-    height: screenHeight * 0.2,
+    width: screenWidth * 0.9,
+    height: screenHeight * 0.4,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 20,
   },
   timerBox: {
     width: '100%',
@@ -222,13 +226,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 15,
+    paddingVertical: 10,
   },
   timerText: {
-    fontSize: screenHeight * 0.15,
+    fontSize: screenHeight * 0.25,
     fontWeight: 'bold',
     color: COLORS.BACKGROUND,
-    lineHeight: screenHeight * 0.15,
+    lineHeight: screenHeight * 0.25,
     fontVariant: ['tabular-nums'],
     textAlign: 'center',
   },
@@ -243,10 +247,11 @@ const styles = StyleSheet.create({
     width: screenWidth * 0.9,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 16,
-    padding: 16,
+    padding: 12,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
-    gap: 20,
+    gap: 12,
+    marginBottom: 20,
   },
   roundProgressSection: {
     alignItems: 'center',
@@ -255,30 +260,42 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sectionLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     color: 'rgba(255, 255, 255, 0.8)',
-    marginBottom: 8,
+    marginBottom: 6,
     textAlign: 'center',
   },
   gymProgressBar: {
     flexDirection: 'row',
-    gap: 4,
-    marginBottom: 8,
+    gap: 3,
+    marginBottom: 6,
   },
   progressSegment: {
-    height: 12,
+    height: 10,
     flex: 1,
-    borderRadius: 6,
-    minWidth: 8,
+    borderRadius: 5,
+    minWidth: 6,
+  },
+  smoothProgressBar: {
+    height: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 5,
+    overflow: 'hidden',
+    marginBottom: 6,
+    width: '100%',
+  },
+  smoothProgressFill: {
+    height: '100%',
+    borderRadius: 5,
   },
   roundInfoText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 'bold',
     color: COLORS.PRIMARY,
   },
   phaseInfoText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 'bold',
     color: COLORS.PRIMARY,
   },
