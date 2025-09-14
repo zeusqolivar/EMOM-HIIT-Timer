@@ -24,7 +24,8 @@ const THUMB_HEIGHT = 80; // Fill entire track height
 const THUMB_WIDTH = 80; // square box shape
 // Ratios to match SwiftUI reference
 const STOP_THRESHOLD_RATIO = 0.35;
-const MAX_DRAG_RATIO = 0.7;
+// Calculate max drag based on thumb width - thumb should slide until its right edge hits the track's right edge
+const MAX_DRAG_RATIO = (SLIDER_WIDTH - THUMB_WIDTH) / SLIDER_WIDTH;
 
 const SlideToStop: React.FC<SlideToStopProps> = ({ 
   onStop, 

@@ -10,9 +10,11 @@ import {
 import { WorkRestSplit, ButtonInteractionState } from '../types/timer.types';
 import { TIMER_CONSTANTS, COLORS, WORK_REST_SPLIT_CONFIG } from '../constants/timer.constants';
 import { useTimerSettings } from '../hooks/useTimerSettings';
+import { useWorkoutStats } from '../hooks/useWorkoutStats';
 import CustomSegmentedControl from '../components/CustomSegmentedControl';
 import RoundButton from '../components/RoundButton';
 import SettingsSheet from '../components/SettingsSheet';
+import WorkoutStatistics from '../components/WorkoutStatistics';
 
 interface PresetSelectionScreenProps {
   timerSettings: ReturnType<typeof useTimerSettings>;
@@ -32,6 +34,7 @@ const PresetSelectionScreen: React.FC<PresetSelectionScreenProps> = ({
     timerSettings.settings.selectedWorkRestSplit as WorkRestSplit
   );
   const [showSettings, setShowSettings] = useState(false);
+  const workoutStats = useWorkoutStats();
 
   // Sync selectedTimeSplit when timerSettings change
   useEffect(() => {
@@ -137,13 +140,20 @@ const PresetSelectionScreen: React.FC<PresetSelectionScreenProps> = ({
 
           {/* Time Split Control */}
           <View style={styles.splitControlContainer}>
-                      <CustomSegmentedControl
-            selection={selectedTimeSplit}
-            options={Object.values(WorkRestSplit)}
-            onSelectionChange={handleTimeSplitChange}
-            label={(option) => option}
-          />
+            <CustomSegmentedControl
+              selection={selectedTimeSplit}
+              options={Object.values(WorkRestSplit)}
+              onSelectionChange={handleTimeSplitChange}
+              label={(option) => option}
+            />
           </View>
+
+          {/* Workout Statistics */}
+          <WorkoutStatistics
+            totalWorkouts={workoutStats.stats.totalWorkouts}
+            totalTime={workoutStats.stats.totalTime}
+            streak={workoutStats.stats.streak}
+          />
         </View>
       </ScrollView>
 
