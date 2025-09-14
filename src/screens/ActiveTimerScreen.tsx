@@ -125,7 +125,7 @@ const ActiveTimerScreen: React.FC<ActiveTimerScreenProps> = ({
         </View>
 
         {/* Spacer to minimize empty space and push slider down slightly */}
-        <View style={{ flex: 1 }} />
+        <View style={{ flex: 0.5 }} />
 
         {/* Slide to Stop Control - iPhone style slider with integrated pause/play */}
         <SlideToStop 
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   },
   timerContainer: {
     width: screenWidth * 0.95,
-    height: screenHeight * 0.45,
+    height: screenHeight * 0.35,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -176,8 +176,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   roundsContainer: {
-    marginTop: 8,
-    marginBottom: 8,
+    marginTop: 4,
+    marginBottom: 4,
     width: screenWidth * 0.94,
     alignItems: 'center',
     gap: 8,

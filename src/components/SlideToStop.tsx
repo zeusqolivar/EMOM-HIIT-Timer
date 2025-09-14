@@ -19,9 +19,9 @@ interface SlideToStopProps {
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const SLIDER_WIDTH = screenWidth * 0.9;
-const SLIDER_HEIGHT = screenHeight * 0.07;
-const THUMB_HEIGHT = SLIDER_HEIGHT * 0.74;
-const THUMB_WIDTH = THUMB_HEIGHT * 1.6; // rounded rectangle like a small pill
+const SLIDER_HEIGHT = 80;
+const THUMB_HEIGHT = 80; // Fill entire track height
+const THUMB_WIDTH = 80; // square box shape
 // Ratios to match SwiftUI reference
 const STOP_THRESHOLD_RATIO = 0.35;
 const MAX_DRAG_RATIO = 0.7;
@@ -151,11 +151,13 @@ const styles = StyleSheet.create({
   track: {
     width: SLIDER_WIDTH,
     height: SLIDER_HEIGHT,
-    borderRadius: 100,
+    borderRadius: 25, // Same as home screen buttons
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
+    padding: 0,
+    margin: 0,
   },
   slideText: {
     color: 'rgba(255, 255, 255, 0.6)',
@@ -165,15 +167,16 @@ const styles = StyleSheet.create({
   },
   thumbContainer: {
     position: 'absolute',
-    left: 8,
+    left: 0,
+    top: 0,
     width: THUMB_WIDTH,
     height: THUMB_HEIGHT,
-    borderRadius: THUMB_HEIGHT / 2,
+    borderRadius: 25, // Same as home screen buttons
   },
   thumb: {
     width: THUMB_WIDTH,
     height: THUMB_HEIGHT,
-    borderRadius: THUMB_HEIGHT / 2,
+    borderRadius: 25, // Same as home screen buttons - box shape
     backgroundColor: COLORS.PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
