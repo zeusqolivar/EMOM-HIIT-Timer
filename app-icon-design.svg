@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with rounded corners -->
+  <rect width="1024" height="1024" rx="180" ry="180" fill="#000000"/>
+  
+  <!-- Outer ring (progress indicator style) -->
+  <circle cx="512" cy="512" r="400" fill="none" stroke="#FF6B35" stroke-width="40" opacity="0.3"/>
+  
+  <!-- Main progress ring (partial) -->
+  <circle cx="512" cy="512" r="400" fill="none" stroke="#FF6B35" stroke-width="40" 
+          stroke-dasharray="1256 1256" stroke-dashoffset="314" 
+          stroke-linecap="round" transform="rotate(-90 512 512)"/>
+  
+  <!-- Inner circle background -->
+  <circle cx="512" cy="512" r="280" fill="#1A1A1A"/>
+  
+  <!-- Timer display background -->
+  <rect x="312" y="420" width="400" height="184" rx="32" ry="32" fill="#FF6B35"/>
+  
+  <!-- Timer text -->
+  <text x="512" y="540" font-family="SF Pro Display, -apple-system, sans-serif" 
+        font-size="120" font-weight="bold" text-anchor="middle" fill="#000000">45</text>
+  
+  <!-- EMOM label -->
+  <text x="512" y="680" font-family="SF Pro Display, -apple-system, sans-serif" 
+        font-size="48" font-weight="600" text-anchor="middle" fill="#FF6B35">EMOM</text>
+  
+  <!-- Round indicator dots -->
+  <circle cx="412" cy="750" r="12" fill="#FF6B35"/>
+  <circle cx="452" cy="750" r="12" fill="#FF6B35"/>
+  <circle cx="492" cy="750" r="12" fill="#FF6B35"/>
+  <circle cx="532" cy="750" r="12" fill="#FF6B35" opacity="0.3"/>
+  <circle cx="572" cy="750" r="12" fill="#FF6B35" opacity="0.3"/>
+  <circle cx="612" cy="750" r="12" fill="#FF6B35" opacity="0.3"/>
+  
+  <!-- Subtle highlight for depth -->
+  <circle cx="512" cy="512" r="400" fill="none" stroke="url(#highlight)" stroke-width="8"/>
+  
+  <!-- Gradient definition -->
+  <defs>
+    <linearGradient id="highlight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.2"/>
+      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:0"/>
+    </linearGradient>
+  </defs>
+</svg>

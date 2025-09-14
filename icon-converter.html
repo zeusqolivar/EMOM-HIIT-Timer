@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMOM Timer Icon Converter</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        .icon-preview {
+            margin: 20px;
+            display: inline-block;
+        }
+        .icon-preview img {
+            border: 1px solid #333;
+            border-radius: 20px;
+        }
+        .download-section {
+            margin: 40px 0;
+        }
+        button {
+            background: #FF6B35;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #ff8555;
+        }
+        #canvas {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>EMOM Timer App Icon</h1>
+    
+    <div class="icon-preview">
+        <h3>Icon Preview</h3>
+        <img id="iconPreview" width="200" height="200" alt="Icon Preview">
+    </div>
+    
+    <div class="download-section">
+        <h3>Download Required Sizes</h3>
+        <p>Click each button to download the PNG file for your app:</p>
+        
+        <button onclick="downloadIcon(40, 'AppIcon-20@2x.png')">40×40 (20@2x)</button>
+        <button onclick="downloadIcon(60, 'AppIcon-20@3x.png')">60×60 (20@3x)</button>
+        <button onclick="downloadIcon(58, 'AppIcon-29@2x.png')">58×58 (29@2x)</button>
+        <button onclick="downloadIcon(87, 'AppIcon-29@3x.png')">87×87 (29@3x)</button>
+        <br>
+        <button onclick="downloadIcon(80, 'AppIcon-40@2x.png')">80×80 (40@2x)</button>
+        <button onclick="downloadIcon(120, 'AppIcon-40@3x.png')">120×120 (40@3x)</button>
+        <button onclick="downloadIcon(120, 'AppIcon-60@2x.png')" style="background: #ff4444;">120×120 (60@2x) - REQUIRED</button>
+        <button onclick="downloadIcon(180, 'AppIcon-60@3x.png')">180×180 (60@3x)</button>
+        <br>
+        <button onclick="downloadIcon(1024, 'AppIcon-1024.png')" style="background: #44ff44; color: #000;">1024×1024 (App Store)</button>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const svgString = \`<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1024" height="1024" rx="180" ry="180" fill="#000000"/>
+  <circle cx="512" cy="512" r="400" fill="none" stroke="#FF6B35" stroke-width="40" opacity="0.3"/>
+  <circle cx="512" cy="512" r="400" fill="none" stroke="#FF6B35" stroke-width="40" 
+          stroke-dasharray="1256 1256" stroke-dashoffset="314" 
+          stroke-linecap="round" transform="rotate(-90 512 512)"/>
+  <circle cx="512" cy="512" r="280" fill="#1A1A1A"/>
+  <rect x="312" y="420" width="400" height="184" rx="32" ry="32" fill="#FF6B35"/>
+  <text x="512" y="540" font-family="SF Pro Display, -apple-system, sans-serif" 
+        font-size="120" font-weight="bold" text-anchor="middle" fill="#000000">45</text>
+  <text x="512" y="680" font-family="SF Pro Display, -apple-system, sans-serif" 
+        font-size="48" font-weight="600" text-anchor="middle" fill="#FF6B35">EMOM</text>
+  <circle cx="412" cy="750" r="12" fill="#FF6B35"/>
+  <circle cx="452" cy="750" r="12" fill="#FF6B35"/>
+  <circle cx="492" cy="750" r="12" fill="#FF6B35"/>
+  <circle cx="532" cy="750" r="12" fill="#FF6B35" opacity="0.3"/>
+  <circle cx="572" cy="750" r="12" fill="#FF6B35" opacity="0.3"/>
+  <circle cx="612" cy="750" r="12" fill="#FF6B35" opacity="0.3"/>
+  <circle cx="512" cy="512" r="400" fill="none" stroke="url(#highlight)" stroke-width="8"/>
+  <defs>
+    <linearGradient id="highlight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.2"/>
+      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:0"/>
+    </linearGradient>
+  </defs>
+</svg>\`;
+
+        function loadSVG() {
+            const blob = new Blob([svgString], {type: 'image/svg+xml'});
+            const url = URL.createObjectURL(blob);
+            const img = document.getElementById('iconPreview');
+            img.src = url;
+        }
+
+        function downloadIcon(size, filename) {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = size;
+            canvas.height = size;
+
+            const img = new Image();
+            const blob = new Blob([svgString], {type: 'image/svg+xml'});
+            const url = URL.createObjectURL(blob);
+
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0, size, size);
+                
+                canvas.toBlob(function(blob) {
+                    const link = document.createElement('a');
+                    link.download = filename;
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                }, 'image/png');
+                
+                URL.revokeObjectURL(url);
+            };
+
+            img.src = url;
+        }
+
+        // Load the SVG preview when page loads
+        window.onload = loadSVG;
+    </script>
+</body>
+</html>
