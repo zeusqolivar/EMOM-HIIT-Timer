@@ -1,96 +1,96 @@
 #!/bin/zsh
 set -e
 
-# Function to run commands with timeout
-run_with_timeout() {
-  local timeout=$1
-  shift
-  timeout $timeout "$@" || {
-    echo "Command timed out after ${timeout}s: $*"
-    return 1
-  }
-}
+echo "===== Starting CI Post-Clone Script ====="
 
 # Resolve repo root regardless of where this script is invoked from
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
 
-echo "===== Installing toolchain ====="
+echo "Working directory: $(pwd)"
+
+# Set Homebrew environment variables to prevent issues
 export HOMEBREW_NO_INSTALL_CLEANUP=TRUE 
 export HOMEBREW_NO_AUTO_UPDATE=1
 export HOMEBREW_NO_ANALYTICS=1
 
-# Install CocoaPods with timeout
-if ! brew list cocoapods >/dev/null 2>&1; then
+echo "===== Installing toolchain ====="
+
+# Install CocoaPods
+if ! command -v pod >/dev/null 2>&1; then
   echo "Installing CocoaPods..."
-  run_with_timeout 300 brew install cocoapods
+  brew install cocoapods
 else
-  echo "CocoaPods already installed"
+  echo "CocoaPods already installed: $(pod --version)"
 fi
 
-# Install Node.js with timeout
-if ! brew list node >/dev/null 2>&1; then
+# Install Node.js
+if ! command -v node >/dev/null 2>&1; then
   echo "Installing Node.js..."
-  run_with_timeout 300 brew install node
+  brew install node
 else
-  echo "Node.js already installed"
+  echo "Node.js already installed: $(node -v)"
 fi
 
-# Ensure Node is on PATH on Xcode Cloud runners (both Homebrew prefixes)
+# Install Yarn
+if ! command -v yarn >/dev/null 2>&1; then
+  echo "Installing Yarn..."
+  brew install yarn
+else
+  echo "Yarn already installed: $(yarn -v)"
+fi
+
+# Ensure tools are in PATH
 export PATH="/opt/homebrew/bin:/usr/local/bin:/opt/homebrew/opt/node/bin:/usr/local/opt/node/bin:$PATH"
 
-# Install Yarn with timeout
-if ! brew list yarn >/dev/null 2>&1; then
-  echo "Installing Yarn..."
-  run_with_timeout 300 brew install yarn
-else
-  echo "Yarn already installed"
-fi
+# Verify all tools are available
+echo "===== Verifying installations ====="
+echo "Node: $(node -v 2>/dev/null || echo 'NOT FOUND')"
+echo "Yarn: $(yarn -v 2>/dev/null || echo 'NOT FOUND')"
+echo "CocoaPods: $(pod --version 2>/dev/null || echo 'NOT FOUND')"
 
-# Verify installations
-echo "Node: $(node -v || echo 'NOT FOUND')"
-echo "Yarn: $(yarn -v || echo 'NOT FOUND')"
-echo "CocoaPods: $(pod --version || echo 'NOT FOUND')"
+# Check for required tools
+for tool in node yarn pod; do
+  if ! command -v "$tool" >/dev/null 2>&1; then
+    echo "ERROR: $tool not found in PATH"
+    echo "Current PATH: $PATH"
+    exit 1
+  fi
+done
 
-# Fail if any tool is missing
-if ! command -v node >/dev/null 2>&1; then
-  echo "ERROR: Node.js not found in PATH"
-  exit 1
-fi
+echo "===== Installing JavaScript dependencies ====="
+yarn install --frozen-lockfile || {
+  echo "Frozen lockfile failed, trying regular install..."
+  yarn install
+}
 
-if ! command -v yarn >/dev/null 2>&1; then
-  echo "ERROR: Yarn not found in PATH"
-  exit 1
-fi
-
-if ! command -v pod >/dev/null 2>&1; then
-  echo "ERROR: CocoaPods not found in PATH"
-  exit 1
-fi
-
-echo "===== Installing JS dependencies ====="
-run_with_timeout 600 yarn install --frozen-lockfile || run_with_timeout 600 yarn install
-
-echo "===== Installing iOS Pods ====="
+echo "===== Installing iOS CocoaPods ====="
 cd ios
 
-# Clean up any existing pods to prevent conflicts
+# Clean up any existing pods
+echo "Cleaning up existing Pods..."
 rm -rf Pods Podfile.lock
 
-# Update pod repo with timeout
+# Update CocoaPods repo
 echo "Updating CocoaPods repo..."
-run_with_timeout 300 pod repo update
+pod repo update
 
-# Install pods with timeout and better error handling
+# Install pods
 echo "Installing CocoaPods dependencies..."
-run_with_timeout 600 pod install --verbose --clean-install
+pod install --verbose
 
-# Verify pod installation
+# Verify installation
 if [ ! -d "Pods" ]; then
-  echo "ERROR: Pods directory not created"
+  echo "ERROR: Pods directory was not created"
   exit 1
 fi
 
-echo "===== Build preparation complete ====="
-echo "Workspace: $(ls -la *.xcworkspace 2>/dev/null || echo 'No workspace found')"
+if [ ! -f "*.xcworkspace" ]; then
+  echo "WARNING: No .xcworkspace file found"
+  ls -la *.xc* || echo "No Xcode project files found"
+fi
+
+echo "===== Build preparation completed successfully ====="
+echo "Pods installed: $(ls -1 Pods | wc -l | tr -d ' ') directories"
+echo "Workspace files: $(ls -1 *.xcworkspace 2>/dev/null || echo 'None found')"
