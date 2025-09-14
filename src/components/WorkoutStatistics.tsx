@@ -42,7 +42,6 @@ const WorkoutStatistics: React.FC<WorkoutStatisticsProps> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Stats</Text>
       <View style={styles.statsRow}>
         {stats.map((stat, index) => (
           <View key={index} style={styles.statItem}>
@@ -59,6 +58,7 @@ const styles = StyleSheet.create({
   container: {
     marginTop: 16,
     paddingHorizontal: 14,
+    alignItems: 'center',
   },
   title: {
     fontSize: 14,
@@ -76,6 +76,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
+    width: '100%', // Take full width of container (which has paddingHorizontal: 14)
   },
   statItem: {
     alignItems: 'center',

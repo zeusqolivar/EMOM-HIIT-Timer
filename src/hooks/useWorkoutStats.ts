@@ -15,8 +15,8 @@ interface WorkoutStats {
   streak: number; // days
 }
 
-const WORKOUT_STORAGE_KEY = 'workout_sessions';
-const STATS_STORAGE_KEY = 'workout_stats';
+const WORKOUT_STORAGE_KEY = 'st_emom_timer_workout_sessions_key';
+const STATS_STORAGE_KEY = 'st_emom_timer_workout_stats_key';
 
 export const useWorkoutStats = () => {
   const [stats, setStats] = useState<WorkoutStats>({

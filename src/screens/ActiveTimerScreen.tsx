@@ -28,11 +28,55 @@ const ActiveTimerScreen: React.FC<ActiveTimerScreenProps> = ({
   onTimerFinish,
   speedUpTimer = false,
 }) => {
-  const [currentTime, setCurrentTime] = useState(timerSettings.workIntervalSeconds);
+  const [currentTime, setCurrentTime] = useState(60); // Always start at 60
   const [currentRound, setCurrentRound] = useState(1);
   const [isWorkPhase, setIsWorkPhase] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
+  const [workTimeRemaining, setWorkTimeRemaining] = useState(timerSettings.workIntervalSeconds);
+  const [restTimeRemaining, setRestTimeRemaining] = useState(timerSettings.restIntervalSeconds);
   const slideAnim = useRef(new Animated.Value(0)).current;
+  const timerScaleAnim = useRef(new Animated.Value(1)).current;
+  const backgroundColorAnim = useRef(new Animated.Value(0)).current;
+
+  // Ensure work/rest times are updated when settings change
+  useEffect(() => {
+    setWorkTimeRemaining(timerSettings.workIntervalSeconds);
+    setRestTimeRemaining(timerSettings.restIntervalSeconds);
+    setCurrentTime(60); // Reset timer to 60
+  }, [timerSettings.workIntervalSeconds, timerSettings.restIntervalSeconds]);
+
+  // Animate phase transitions
+  useEffect(() => {
+    if (isWorkPhase) {
+      // Animate to work phase (orange, full size)
+      Animated.parallel([
+        Animated.timing(timerScaleAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(backgroundColorAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: false,
+        }),
+      ]).start();
+    } else {
+      // Animate to rest phase (red, smaller)
+      Animated.parallel([
+        Animated.timing(timerScaleAnim, {
+          toValue: 0.85,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(backgroundColorAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: false,
+        }),
+      ]).start();
+    }
+  }, [isWorkPhase, timerScaleAnim, backgroundColorAnim]);
 
   useEffect(() => {
     if (timerSettings.isInfiniteMode) {
@@ -43,38 +87,64 @@ const ActiveTimerScreen: React.FC<ActiveTimerScreenProps> = ({
     if (isPaused) return;
 
     const interval = setInterval(() => {
+      const timeDecrement = speedUpTimer ? 4 : 1; // 4x speed when enabled
+      
+      // Update the 60-second display timer
       setCurrentTime(prev => {
-        const timeDecrement = speedUpTimer ? 4 : 1; // 4x speed when enabled
         if (prev <= timeDecrement) {
-          // Phase complete
-          if (isWorkPhase && timerSettings.restIntervalSeconds > 0) {
-            // Switch to rest phase
-            setIsWorkPhase(false);
-            return timerSettings.restIntervalSeconds;
-          } else {
-            // Round complete
-            if (currentRound >= timerSettings.totalRounds) {
-              onTimerFinish();
-              return 0;
-            } else {
-              // Next round
-              setCurrentRound(prev => prev + 1);
-              setIsWorkPhase(true);
-              return timerSettings.workIntervalSeconds;
-            }
-          }
+          return 60; // Reset to 60 when it reaches 0
         } else {
           return prev - timeDecrement;
         }
       });
+
+      // Track work/rest phase progress
+      if (isWorkPhase) {
+        setWorkTimeRemaining(prev => {
+          if (prev <= timeDecrement) {
+            // Work phase complete
+            if (timerSettings.restIntervalSeconds > 0) {
+              setIsWorkPhase(false);
+              setRestTimeRemaining(timerSettings.restIntervalSeconds);
+            } else {
+              // No rest, move to next round
+              if (currentRound >= timerSettings.totalRounds) {
+                onTimerFinish();
+              } else {
+                setCurrentRound(prev => prev + 1);
+                setWorkTimeRemaining(timerSettings.workIntervalSeconds);
+              }
+            }
+            return 0;
+          } else {
+            return prev - timeDecrement;
+          }
+        });
+      } else {
+        setRestTimeRemaining(prev => {
+          if (prev <= timeDecrement) {
+            // Rest phase complete, move to next round
+            if (currentRound >= timerSettings.totalRounds) {
+              onTimerFinish();
+            } else {
+              setCurrentRound(prev => prev + 1);
+              setIsWorkPhase(true);
+              setWorkTimeRemaining(timerSettings.workIntervalSeconds);
+            }
+            return 0;
+          } else {
+            return prev - timeDecrement;
+          }
+        });
+      }
     }, speedUpTimer ? 250 : 1000); // 4x faster interval when speed up is enabled
 
     return () => clearInterval(interval);
   }, [timerSettings, currentRound, isWorkPhase, onTimerFinish, isPaused, speedUpTimer]);
 
   const formatTime = useCallback((seconds: number) => {
-    const displaySeconds = seconds === 0 ? 60 : seconds;
-    return displaySeconds.toString().padStart(2, '0');
+    // Show actual countdown time, but ensure it starts from the correct interval
+    return seconds.toString().padStart(2, '0');
   }, []);
 
   const formattedTime = useMemo(() => formatTime(currentTime), [currentTime, formatTime]);
@@ -109,8 +179,8 @@ const ActiveTimerScreen: React.FC<ActiveTimerScreenProps> = ({
 
   // Calculate progress values
   const currentProgress = isWorkPhase 
-    ? (timerSettings.workIntervalSeconds - currentTime) / timerSettings.workIntervalSeconds
-    : (timerSettings.restIntervalSeconds - currentTime) / timerSettings.restIntervalSeconds;
+    ? (timerSettings.workIntervalSeconds - workTimeRemaining) / timerSettings.workIntervalSeconds
+    : (timerSettings.restIntervalSeconds - restTimeRemaining) / timerSettings.restIntervalSeconds;
   
   const overallProgress = (currentRound - 1) / timerSettings.totalRounds;
 
@@ -118,17 +188,27 @@ const ActiveTimerScreen: React.FC<ActiveTimerScreenProps> = ({
     <View style={styles.container}>
       <View style={styles.content}>
         {/* Timer Display - Big and Dominant */}
-        <View style={styles.timerContainer}>
-          <View
+        <Animated.View style={[
+          styles.timerContainer,
+          {
+            transform: [{ scale: timerScaleAnim }],
+          }
+        ]}>
+          <Animated.View
             style={[
               styles.timerBox,
-              { backgroundColor: isWorkPhase ? COLORS.PRIMARY : '#FF4444' },
+              {
+                backgroundColor: backgroundColorAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [COLORS.PRIMARY, '#FF4444'],
+                }),
+              },
             ]}
           >
             <Text style={styles.timerText}>{formattedTime}</Text>
             <Text style={styles.phaseText}>{isWorkPhase ? 'WORK' : 'REST'}</Text>
-          </View>
-        </View>
+          </Animated.View>
+        </Animated.View>
 
         {/* Gym Style Progress Bars */}
         <View style={styles.gymProgressContainer}>
@@ -268,26 +348,26 @@ const styles = StyleSheet.create({
   },
   gymProgressBar: {
     flexDirection: 'row',
-    gap: 3,
-    marginBottom: 6,
+    gap: 4,
+    marginBottom: 8,
   },
   progressSegment: {
-    height: 10,
+    height: 16,
     flex: 1,
-    borderRadius: 5,
-    minWidth: 6,
+    borderRadius: 8,
+    minWidth: 10,
   },
   smoothProgressBar: {
-    height: 10,
+    height: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 5,
+    borderRadius: 8,
     overflow: 'hidden',
-    marginBottom: 6,
+    marginBottom: 8,
     width: '100%',
   },
   smoothProgressFill: {
     height: '100%',
-    borderRadius: 5,
+    borderRadius: 8,
   },
   roundInfoText: {
     fontSize: 12,
