@@ -39,28 +39,10 @@ const PreparationScreen: React.FC<PreparationScreenProps> = ({
     const interval = setInterval(() => {
       timeRemaining -= 0.05; // Update every 50ms for smoother animation
       
-      // Compute progress based on current value/phase, not continuous time
+      // Compute progress based on elapsed time for smooth continuous filling
       const computePreparationProgress = (timeLeft: number, totalTime: number) => {
-        if (timeLeft > 3) {
-          // Ready phase: circle fills from 0% to 25% (or appropriate fraction)
-          const readyPhaseProgress = (totalTime - timeLeft) / (totalTime - 3);
-          return readyPhaseProgress * 0.25; // Ready gets 25% of the circle
-        } else if (timeLeft > 2) {
-          // "3" phase: circle fills from 25% to 50%
-          const phase3Progress = (3 - timeLeft) / 1; // 1 second for "3"
-          return 0.25 + (phase3Progress * 0.25);
-        } else if (timeLeft > 1) {
-          // "2" phase: circle fills from 50% to 75%
-          const phase2Progress = (2 - timeLeft) / 1; // 1 second for "2"
-          return 0.5 + (phase2Progress * 0.25);
-        } else if (timeLeft > 0) {
-          // "1" phase: circle fills from 75% to 100%
-          const phase1Progress = (1 - timeLeft) / 1; // 1 second for "1"
-          return 0.75 + (phase1Progress * 0.25);
-        } else {
-          // "GO" phase: circle is 100% filled
-          return 1.0;
-        }
+        const elapsed = totalTime - timeLeft;
+        return Math.min(elapsed / totalTime, 1.0);
       };
       
       const currentProgress = computePreparationProgress(timeRemaining, totalTime);

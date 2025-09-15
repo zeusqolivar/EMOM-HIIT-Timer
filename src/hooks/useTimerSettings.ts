@@ -5,17 +5,17 @@ import { TIMER_CONSTANTS, WORK_REST_SPLIT_CONFIG } from '../constants/timer.cons
 
 
 
-// Default values
+// Default values - matching original SwiftUI app
 const DEFAULT_VALUES = {
-  PREPARATION_TIME: 3 as number, // Default to 3 seconds like SwiftUI
-  COOLDOWN_TIME: 0 as number,
-  NUMBER_OF_MINUTES: 10 as number,
-  SPEED_FACTOR: 1.0 as number,
-  SPLIT_TIME: 0 as number,
+  PREPARATION_TIME: 0 as number, // Match original: 0 seconds
+  COOLDOWN_TIME: 0 as number,    // Match original: 0 seconds  
+  NUMBER_OF_MINUTES: 10 as number, // Match original: 10 minutes
+  SPEED_FACTOR: 1.0 as number,   // Match original: 1.0x speed
+  SPLIT_TIME: 0 as number,       // Match original: 0 seconds
   SELECTED_SPLIT: WorkRestSplit.NONE,
 } as const;
 
-const SETTINGS_STORAGE_KEY = 'timer_settings';
+const SETTINGS_STORAGE_KEY = 'st_emom_timer_settings_key';
 
 export const useTimerSettings = () => {
   const [settings, setSettings] = useState<TimerConfiguration>({

@@ -7,7 +7,9 @@ import {
   StyleSheet,
   Dimensions,
   Switch,
+  ScrollView,
 } from 'react-native';
+import { __DEV__ } from 'react-native';
 import { COLORS } from '../constants/timer.constants';
 
 interface SettingsSheetProps {
@@ -66,7 +68,12 @@ const SettingsSheet: React.FC<SettingsSheetProps> = ({
         {/* Preparation Time Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Preparation Time</Text>
-          <View style={styles.optionsContainer}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+            style={styles.scrollView}
+          >
             {preparationOptions.map((option) => (
               <TouchableOpacity
                 key={option.value}
@@ -108,13 +115,18 @@ const SettingsSheet: React.FC<SettingsSheetProps> = ({
                 )}
               </TouchableOpacity>
             ))}
-          </View>
+          </ScrollView>
         </View>
 
         {/* Cooldown Time Section */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: '#007AFF' }]}>Cooldown Time</Text>
-          <View style={styles.optionsContainer}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+            style={styles.scrollView}
+          >
             {cooldownOptions.map((option) => (
               <TouchableOpacity
                 key={option.value}
@@ -156,22 +168,24 @@ const SettingsSheet: React.FC<SettingsSheetProps> = ({
                 )}
               </TouchableOpacity>
             ))}
-          </View>
+          </ScrollView>
         </View>
 
-        {/* Speed Up Timer Section */}
-        <View style={styles.section}>
-          <View style={styles.toggleContainer}>
-            <Text style={styles.sectionTitle}>Speed Up Timer (4x)</Text>
-            <Switch
-              value={speedUpTimer}
-              onValueChange={onSpeedUpTimerChange}
-              trackColor={{ false: 'rgba(255, 255, 255, 0.2)', true: 'rgba(255, 255, 255, 0.2)' }}
-              thumbColor={speedUpTimer ? '#FFFFFF' : '#FFFFFF'}
-              ios_backgroundColor="rgba(255, 255, 255, 0.2)"
-            />
+        {/* Speed Up Timer Section - Only show in debug builds */}
+        {__DEV__ && (
+          <View style={styles.section}>
+            <View style={styles.toggleContainer}>
+              <Text style={styles.sectionTitle}>Speed Up Timer (4x)</Text>
+              <Switch
+                value={speedUpTimer}
+                onValueChange={onSpeedUpTimerChange}
+                trackColor={{ false: 'rgba(255, 255, 255, 0.2)', true: 'rgba(255, 255, 255, 0.2)' }}
+                thumbColor={speedUpTimer ? '#FFFFFF' : '#FFFFFF'}
+                ios_backgroundColor="rgba(255, 255, 255, 0.2)"
+              />
+            </View>
           </View>
-        </View>
+        )}
         </View>
       </View>
     </Modal>
@@ -233,26 +247,32 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginBottom: 16,
   },
-  optionsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  scrollView: {
+    marginHorizontal: -20, // Extend to edges
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
     gap: 12,
   },
   optionButton: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 25,
     minWidth: 80,
+    aspectRatio: 1, // Make buttons square like home screen buttons
+    justifyContent: 'center',
     alignItems: 'center',
   },
   optionText: {
     fontSize: 16,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   optionUnit: {
     fontSize: 12,
     fontWeight: '500',
     marginTop: 2,
+    textAlign: 'center',
   },
   toggleContainer: {
     flexDirection: 'row',

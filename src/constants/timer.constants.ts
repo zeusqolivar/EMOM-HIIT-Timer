@@ -5,7 +5,7 @@ export const TIMER_CONSTANTS = {
   INFINITE_MODE_LABEL: 'INFINITE',
   UPGRADE_BUTTON_LABEL: 'Upgrade',
   MINUTES_LABEL: 'MIN',
-  HEADER_TITLE: 'EMOM TIMER',
+  HEADER_TITLE: '',
 } as const;
 
 export const WORK_REST_SPLIT_CONFIG = {

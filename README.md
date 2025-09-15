@@ -1,6 +1,6 @@
-# EMOM HIIT Timer - React Native
+# HIIT Timer - React Native
 
-A professional React Native implementation of the EMOM (Every Minute On the Minute) HIIT Timer app, featuring the exact UI design from the original SwiftUI version.
+A professional React Native implementation of the HIIT Timer app, featuring the exact UI design from the original SwiftUI version.
 
 ## 🎯 **Current Implementation Status**
 
@@ -35,7 +35,7 @@ src/
 ### **Exact Design Match from Image:**
 
 #### **Header Section:**
-- **"EMOM TIMER"** title in large, bold, yellow text
+- **Title** in large, bold, yellow text
 - **"Upgrade"** button with rounded yellow background
 - **Settings button** (⋯) with yellow background
 

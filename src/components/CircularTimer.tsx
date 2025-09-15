@@ -40,10 +40,10 @@ const CircularTimer: React.FC<CircularTimerProps> = ({
   const circumference = 2 * Math.PI * radius;
 
   useEffect(() => {
-    // Animate progress with easeInOut over 0.7 seconds (matching SwiftUI)
+    // Animate progress quickly to sync with countdown
     Animated.timing(progressAnim, {
       toValue: progress,
-      duration: 700, // Match SwiftUI .easeInOut(duration: 0.7)
+      duration: 100, // Quick animation to stay in sync
       useNativeDriver: false, // SVG properties can't use native driver
     }).start();
   }, [progress, progressAnim]);
