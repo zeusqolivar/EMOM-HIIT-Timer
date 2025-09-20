@@ -39,14 +39,6 @@ const CircularTimer: React.FC<CircularTimerProps> = ({
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
 
-  useEffect(() => {
-    // Animate progress quickly to sync with countdown
-    Animated.timing(progressAnim, {
-      toValue: progress,
-      duration: 100, // Quick animation to stay in sync
-      useNativeDriver: false, // SVG properties can't use native driver
-    }).start();
-  }, [progress, progressAnim]);
 
   useEffect(() => {
     if (showReady) {
@@ -98,6 +90,16 @@ const CircularTimer: React.FC<CircularTimerProps> = ({
       }, 150);
     }
   }, [value, showReady]);
+
+  // Separate effect for progress animation to match SwiftUI behavior
+  useEffect(() => {
+    // Animate progress with fast timing to stay in sync with data
+    Animated.timing(progressAnim, {
+      toValue: progress,
+      duration: 100, // Fast animation to stay in sync
+      useNativeDriver: false, // SVG properties can't use native driver
+    }).start();
+  }, [progress, progressAnim]);
 
   const getDisplayText = () => {
     if (showReady) {

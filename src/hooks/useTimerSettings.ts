@@ -7,7 +7,7 @@ import { TIMER_CONSTANTS, WORK_REST_SPLIT_CONFIG } from '../constants/timer.cons
 
 // Default values - matching original SwiftUI app
 const DEFAULT_VALUES = {
-  PREPARATION_TIME: 0 as number, // Match original: 0 seconds
+  PREPARATION_TIME: 5 as number, // Set to 5 seconds so users can see Ready phase
   COOLDOWN_TIME: 0 as number,    // Match original: 0 seconds  
   NUMBER_OF_MINUTES: 10 as number, // Match original: 10 minutes
   SPEED_FACTOR: 1.0 as number,   // Match original: 1.0x speed
