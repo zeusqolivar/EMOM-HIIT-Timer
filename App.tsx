@@ -1,6 +1,6 @@
 /**
- * EMOM HIIT Timer App
- * React Native version of the SwiftUI EMOM Timer
+ * HIIT Timer App
+ * React Native version of the SwiftUI Timer
  */
 
 import React from 'react';

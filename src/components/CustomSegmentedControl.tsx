@@ -5,6 +5,7 @@ import {
   Text,
   StyleSheet,
   Animated,
+  Dimensions,
 } from 'react-native';
 import { COLORS } from '../constants/timer.constants';
 
@@ -29,57 +30,54 @@ const CustomSegmentedControl = <T extends string>({
   textColor = COLORS.PRIMARY,
   selectedTextColor = COLORS.BACKGROUND,
 }: CustomSegmentedControlProps<T>) => {
-  const animatedValues = useRef<{ [key: string]: Animated.Value }>({});
-  const highlightAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  const [containerWidth, setContainerWidth] = React.useState(0);
+  const [optionWidth, setOptionWidth] = React.useState(0);
 
-  // Initialize animated values for each option
+  // Calculate slide position based on selection
   useEffect(() => {
-    options.forEach(option => {
-      if (!animatedValues.current[option]) {
-        animatedValues.current[option] = new Animated.Value(0);
-      }
-    });
-  }, [options]);
-
-  // Animate selection change
-  useEffect(() => {
-    options.forEach(option => {
-      const isSelected = option === selection;
-      const targetValue = isSelected ? 1 : 0;
+    const selectedIndex = options.findIndex(option => option === selection);
+    if (selectedIndex !== -1 && optionWidth > 0) {
+      const targetPosition = selectedIndex * optionWidth;
       
-      Animated.spring(animatedValues.current[option], {
-        toValue: targetValue,
+      Animated.timing(slideAnim, {
+        toValue: targetPosition,
+        duration: 250,
         useNativeDriver: false,
-        tension: 100,
-        friction: 8,
       }).start();
-    });
-  }, [selection, options]);
+    }
+  }, [selection, options, optionWidth, slideAnim]);
 
   const handleSelectionChange = (newSelection: T) => {
-    // Add spring animation for the highlight
-    Animated.spring(highlightAnim, {
-      toValue: 1,
-      useNativeDriver: false,
-      tension: 100,
-      friction: 8,
-    }).start(() => {
-      highlightAnim.setValue(0);
-    });
-
     onSelectionChange(newSelection);
+  };
+
+  const handleLayout = (event: any) => {
+    const { width } = event.nativeEvent.layout;
+    setContainerWidth(width);
+    setOptionWidth(width / options.length);
   };
 
   return (
     <View style={[styles.container, { backgroundColor }]}>
-      <View style={styles.optionsContainer}>
+      <View style={styles.optionsContainer} onLayout={handleLayout}>
+        {/* Sliding background indicator */}
+        {optionWidth > 0 && (
+          <Animated.View
+            style={[
+              styles.slidingIndicator,
+              {
+                backgroundColor: highlightColor,
+                width: optionWidth,
+                transform: [{ translateX: slideAnim }],
+              },
+            ]}
+          />
+        )}
+        
         {options.map((option, index) => {
           const isSelected = option === selection;
           const textParts = label(option).split('\n');
-          const scale = animatedValues.current[option]?.interpolate({
-            inputRange: [0, 1],
-            outputRange: [1, 1.05],
-          }) || 1;
           
           return (
             <TouchableOpacity
@@ -88,13 +86,6 @@ const CustomSegmentedControl = <T extends string>({
               onPress={() => handleSelectionChange(option)}
               activeOpacity={0.7}
             >
-              <Animated.View style={[
-                styles.optionBackground,
-                {
-                  backgroundColor: isSelected ? highlightColor : 'transparent',
-                  transform: [{ scale }],
-                }
-              ]} />
               <View style={styles.textContainer}>
                 <Text style={[
                   styles.mainText,
@@ -127,27 +118,25 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     flexDirection: 'row',
-    gap: 4,
+    position: 'relative',
+  },
+  slidingIndicator: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    borderRadius: 20,
+    zIndex: 1,
   },
   option: {
     flex: 1,
     paddingVertical: 20,
-    borderRadius: 20,
-    marginHorizontal: 2,
-    position: 'relative',
-  },
-  optionBackground: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2,
   },
   textContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 1,
   },
   mainText: {
     fontSize: 20,
