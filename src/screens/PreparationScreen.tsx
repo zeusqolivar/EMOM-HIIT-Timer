@@ -20,6 +20,7 @@ const PreparationScreen: React.FC<PreparationScreenProps> = ({
   const [currentValue, setCurrentValue] = useState(0);
   const [progress, setProgress] = useState(0);
   const [showReady, setShowReady] = useState(true);
+  const [lastCountdownValue, setLastCountdownValue] = useState<number | null>(null);
 
   // Helper function to match SwiftUI computePreparationProgress
   const computePreparationProgress = (value: number, progress: number): number => {
@@ -45,51 +46,65 @@ const PreparationScreen: React.FC<PreparationScreenProps> = ({
       return;
     }
 
-    // Start with "Ready" state and circle prefilled to 100%
+    // Start with empty circle and gradually fill it up
     setShowReady(true);
     setCurrentValue(0);
-    setProgress(1.0); // Start with circle prefilled to 100%
+    setProgress(0.0); // Start with empty circle
+    
+    let interval: NodeJS.Timeout;
     
     // Delay timer start by 1 second (like SwiftUI onAppear delay)
     const startTimer = setTimeout(() => {
       let timeRemaining = preparationTime;
       const totalTime = preparationTime;
       
-      const interval = setInterval(() => {
-        timeRemaining -= 0.05; // Update every 50ms for smoother animation
-        
-        // Calculate phase progress exactly like SwiftUI ViewModel handleTick()
-        // currentPhaseProgress = max(0.0, min(1.0, Double(preparationTime - currentPhaseTimeRemaining) / Double(preparationTime)))
-        const phaseProgress = Math.max(0.0, Math.min(1.0, (totalTime - timeRemaining) / totalTime));
+      interval = setInterval(() => {
+        timeRemaining -= 0.1; // Update every 100ms for slower, more deliberate animation
         
         if (timeRemaining > 3) {
-          // Ready phase: Show "Ready" with circle reducing from 100% to 66%
-          const readyProgress = 1.0 - ((totalTime - timeRemaining) / (totalTime - 3)) * 0.34; // 100% to 66%
-          setProgress(Math.max(0.66, readyProgress));
+          // Ready phase: Gradually fill circle from 0% to 100% over the ready duration
+          const readyDuration = totalTime - 3;
+          const readyElapsed = totalTime - timeRemaining;
+          const readyProgress = Math.min(1.0, readyElapsed / readyDuration);
+          setProgress(readyProgress);
           setShowReady(true);
           setCurrentValue(0);
+          setLastCountdownValue(null); // Reset for countdown phase
         } else if (timeRemaining > 0) {
-          // Countdown phase: 3, 2, 1 with circle emptying from 66% to 0%
+          // Countdown phase: Discrete steps - circle empties in distinct steps
           const countdownValue = Math.ceil(timeRemaining);
           setShowReady(false);
           setCurrentValue(countdownValue);
           
-          // Circle empties during countdown: 3=66%, 2=33%, 1=0%
-          const countdownProgress = timeRemaining / 3 * 0.66; // 66% to 0%
-          setProgress(countdownProgress);
+          // Play short beep for countdown ticks (3, 2, 1) - only when value changes
+          if (countdownValue >= 1 && countdownValue <= 3 && countdownValue !== lastCountdownValue) {
+            // SoundService.playShortBeep(); // Commented out since we removed sound
+            setLastCountdownValue(countdownValue);
+            
+            // Set discrete progress values for each countdown number
+            if (countdownValue === 3) {
+              setProgress(0.66); // 66% when showing "3"
+            } else if (countdownValue === 2) {
+              setProgress(0.33); // 33% when showing "2"
+            } else if (countdownValue === 1) {
+              setProgress(0.0);  // 0% when showing "1"
+            }
+          }
         } else {
           // Time's up - complete preparation immediately
           clearInterval(interval);
+          // SoundService.playLongBeep(); // Commented out since we removed sound
           onPreparationComplete();
         }
-      }, 50); // Update every 50ms for smoother progress
-
-      // Cleanup function for the interval
-      return () => clearInterval(interval);
+      }, 100); // Update every 100ms for more deliberate animation
     }, 1000); // 1 second delay like SwiftUI
 
+    // Cleanup function - this runs when component unmounts or dependencies change
     return () => {
       clearTimeout(startTimer);
+      if (interval) {
+        clearInterval(interval);
+      }
     };
   }, [preparationTime, onPreparationComplete]);
 

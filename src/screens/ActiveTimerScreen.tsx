@@ -212,29 +212,67 @@ const ActiveTimerScreen: React.FC<ActiveTimerScreenProps> = ({
 
         {/* Gym Style Progress Bars */}
         <View style={styles.gymProgressContainer}>
-          {/* Round Progress - Gym Equipment Style */}
+          {/* Round Progress - Gym Equipment Style or Infinite Mode */}
           <View style={styles.roundProgressSection}>
-            <Text style={styles.sectionLabel}>Round Progress</Text>
-            <View style={styles.gymProgressBar}>
-              {Array.from({ length: timerSettings.totalRounds }, (_, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.progressSegment,
-                    {
-                      backgroundColor: index < currentRound - 1 
-                        ? COLORS.PRIMARY 
-                        : index === currentRound - 1 
-                        ? 'rgba(255, 204, 0, 0.8)' // Current round - yellow
-                        : 'rgba(128, 128, 128, 0.3)', // Future rounds - grey
-                    }
-                  ]}
-                />
-              ))}
-            </View>
-            <Text style={styles.roundInfoText}>
-              {currentRound} / {timerSettings.totalRounds}
-            </Text>
+            {timerSettings.isInfiniteMode ? (
+              // Infinite Mode: Show big infinity symbol
+              <>
+                <Text style={styles.sectionLabel}>Infinite Mode</Text>
+                <View style={styles.infiniteContainer}>
+                  <Text style={styles.infiniteSymbol}>∞</Text>
+                </View>
+              </>
+            ) : (
+              // Regular Mode: Show round progress circles
+              <>
+                <Text style={styles.sectionLabel}>Round Progress</Text>
+                <View style={styles.gymProgressBar}>
+                  {Array.from({ length: Math.ceil(timerSettings.totalRounds / 10) }, (_, rowIndex) => {
+                    const segmentsInRow = Math.min(10, timerSettings.totalRounds - rowIndex * 10);
+                    // Calculate dynamic size and spacing based on total rounds
+                    const getSegmentConfig = () => {
+                      if (timerSettings.totalRounds <= 3) return { size: 40, gap: 16, rowGap: 8 }; // Very large for 3 or fewer
+                      if (timerSettings.totalRounds <= 5) return { size: 32, gap: 12, rowGap: 6 }; // Large for 4-5
+                      if (timerSettings.totalRounds <= 8) return { size: 28, gap: 10, rowGap: 5 }; // Medium-large for 6-8
+                      if (timerSettings.totalRounds <= 12) return { size: 24, gap: 8, rowGap: 4 };  // Medium for 9-12
+                      if (timerSettings.totalRounds <= 20) return { size: 18, gap: 6, rowGap: 3 };  // Small for 13-20
+                      if (timerSettings.totalRounds <= 40) return { size: 14, gap: 3, rowGap: 2 };  // Very small for 21-40
+                      return { size: 12, gap: 2, rowGap: 1 }; // Minimal for 41+
+                    };
+                    const { size: segmentSize, gap, rowGap } = getSegmentConfig();
+                    
+                    return (
+                      <View key={rowIndex} style={[styles.progressRow, { gap, marginBottom: rowGap }]}>
+                        {Array.from({ length: segmentsInRow }, (_, colIndex) => {
+                          const index = rowIndex * 10 + colIndex;
+                          return (
+                            <View
+                              key={index}
+                              style={[
+                                styles.progressSegment,
+                                {
+                                  width: segmentSize,
+                                  height: segmentSize,
+                                  borderRadius: segmentSize / 2, // Make it circular
+                                  backgroundColor: index < currentRound - 1 
+                                    ? COLORS.PRIMARY 
+                                    : index === currentRound - 1 
+                                    ? 'rgba(255, 204, 0, 0.8)' // Current round - yellow
+                                    : 'rgba(128, 128, 128, 0.3)', // Future rounds - grey
+                                }
+                              ]}
+                            />
+                          );
+                        })}
+                      </View>
+                    );
+                  })}
+                </View>
+                <Text style={styles.roundInfoText}>
+                  {currentRound} / {timerSettings.totalRounds}
+                </Text>
+              </>
+            )}
           </View>
 
           {/* Phase Progress - Smooth Animation */}
@@ -347,15 +385,30 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   gymProgressBar: {
-    flexDirection: 'row',
-    gap: 4,
+    flexDirection: 'column',
     marginBottom: 8,
   },
+  progressRow: {
+    flexDirection: 'row',
+    gap: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   progressSegment: {
-    height: 16,
-    flex: 1,
-    borderRadius: 8,
-    minWidth: 10,
+    // Size is now set dynamically in the component
+    // No flex properties to avoid conflicts
+  },
+  infiniteContainer: {
+    height: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  infiniteSymbol: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    color: COLORS.PRIMARY,
+    textAlign: 'center',
   },
   smoothProgressBar: {
     height: 16,
