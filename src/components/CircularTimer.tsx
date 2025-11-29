@@ -44,6 +44,7 @@ const CircularTimer: React.FC<CircularTimerProps> = ({
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
 
+<<<<<<< HEAD
   useEffect(() => {
     // Animate progress - duration can be customized based on timer type
     // Longer duration (700ms) for smooth workout intervals
@@ -55,6 +56,8 @@ const CircularTimer: React.FC<CircularTimerProps> = ({
       useNativeDriver: false, // SVG properties can't use native driver
     }).start();
   }, [progress, progressAnim, progressAnimationDuration]);
+=======
+>>>>>>> b9d50a8cefd2ec7203abbf5c6d1953e86963bad8
 
   useEffect(() => {
     if (showReady) {
@@ -106,6 +109,16 @@ const CircularTimer: React.FC<CircularTimerProps> = ({
       }, 150);
     }
   }, [value, showReady]);
+
+  // Separate effect for progress animation to match SwiftUI behavior
+  useEffect(() => {
+    // Animate progress with fast timing to stay in sync with data
+    Animated.timing(progressAnim, {
+      toValue: progress,
+      duration: 100, // Fast animation to stay in sync
+      useNativeDriver: false, // SVG properties can't use native driver
+    }).start();
+  }, [progress, progressAnim]);
 
   const getDisplayText = () => {
     if (showReady) {
