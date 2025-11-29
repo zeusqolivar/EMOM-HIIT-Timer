@@ -33,70 +33,81 @@ const PreparationScreen: React.FC<PreparationScreenProps> = ({
     setCurrentValue(0);
     setProgress(0);
     
-    let timeRemaining = preparationTime;
-    const totalTime = preparationTime;
+    // Track interval reference for cleanup
+    let interval: NodeJS.Timeout | null = null;
     
-    const interval = setInterval(() => {
-      timeRemaining -= 0.05; // Update every 50ms for smoother animation
+    // Add a 300ms delay before starting countdown to let screen fully render/transition
+    const startDelay = setTimeout(() => {
+      let timeRemaining = preparationTime;
+      const totalTime = preparationTime;
       
-      // Compute progress based on current value/phase, not continuous time
-      const computePreparationProgress = (timeLeft: number, totalTime: number) => {
-        if (timeLeft > 3) {
-          // Ready phase: circle fills from 0% to 25% (or appropriate fraction)
-          const readyPhaseProgress = (totalTime - timeLeft) / (totalTime - 3);
-          return readyPhaseProgress * 0.25; // Ready gets 25% of the circle
-        } else if (timeLeft > 2) {
-          // "3" phase: circle fills from 25% to 50%
-          const phase3Progress = (3 - timeLeft) / 1; // 1 second for "3"
-          return 0.25 + (phase3Progress * 0.25);
-        } else if (timeLeft > 1) {
-          // "2" phase: circle fills from 50% to 75%
-          const phase2Progress = (2 - timeLeft) / 1; // 1 second for "2"
-          return 0.5 + (phase2Progress * 0.25);
-        } else if (timeLeft > 0) {
-          // "1" phase: circle fills from 75% to 100%
-          const phase1Progress = (1 - timeLeft) / 1; // 1 second for "1"
-          return 0.75 + (phase1Progress * 0.25);
+      interval = setInterval(() => {
+        timeRemaining -= 0.05; // Update every 50ms for smoother animation
+        
+        // Compute progress based on current value/phase, not continuous time
+        // Circle fills UP from 0% to 100% as countdown progresses
+        const computePreparationProgress = (timeLeft: number, totalTime: number) => {
+          if (timeLeft > 3) {
+            // Ready phase: circle fills from 0% to 25% (or appropriate fraction)
+            const readyPhaseProgress = (totalTime - timeLeft) / (totalTime - 3);
+            return readyPhaseProgress * 0.25; // Ready gets 25% of the circle
+          } else if (timeLeft > 2) {
+            // "3" phase: circle fills from 25% to 50%
+            const phase3Progress = (3 - timeLeft) / 1; // 1 second for "3"
+            return 0.25 + (phase3Progress * 0.25);
+          } else if (timeLeft > 1) {
+            // "2" phase: circle fills from 50% to 75%
+            const phase2Progress = (2 - timeLeft) / 1; // 1 second for "2"
+            return 0.5 + (phase2Progress * 0.25);
+          } else if (timeLeft > 0) {
+            // "1" phase: circle fills from 75% to 100%
+            const phase1Progress = (1 - timeLeft) / 1; // 1 second for "1"
+            return 0.75 + (phase1Progress * 0.25);
+          } else {
+            // "GO" phase: circle is 100% filled
+            return 1.0;
+          }
+        };
+        
+        const currentProgress = computePreparationProgress(timeRemaining, totalTime);
+        setProgress(currentProgress);
+        
+        if (timeRemaining > 3) {
+          // Still in "Ready" phase
+          if (!showReady) {
+            setShowReady(true);
+            setCurrentValue(0);
+          }
+        } else if (timeRemaining > 0) {
+          // Countdown phase: 3, 2, 1
+          const countdownValue = Math.ceil(timeRemaining);
+          if (showReady || currentValue !== countdownValue) {
+            setShowReady(false);
+            setCurrentValue(countdownValue);
+          }
         } else {
-          // "GO" phase: circle is 100% filled
-          return 1.0;
+          // Time's up - show "GO"
+          if (currentValue !== 0 || showReady) {
+            setShowReady(false);
+            setCurrentValue(0); // This will show "GO"
+            setProgress(1); // Circle fully filled
+          }
+          
+          // Complete after showing "GO" briefly
+          setTimeout(() => {
+            onPreparationComplete();
+          }, 800);
+          
+          if (interval) clearInterval(interval);
         }
-      };
-      
-      const currentProgress = computePreparationProgress(timeRemaining, totalTime);
-      setProgress(currentProgress);
-      
-      if (timeRemaining > 3) {
-        // Still in "Ready" phase
-        if (!showReady) {
-          setShowReady(true);
-          setCurrentValue(0);
-        }
-      } else if (timeRemaining > 0) {
-        // Countdown phase: 3, 2, 1
-        const countdownValue = Math.ceil(timeRemaining);
-        if (showReady || currentValue !== countdownValue) {
-          setShowReady(false);
-          setCurrentValue(countdownValue);
-        }
-      } else {
-        // Time's up - show "GO"
-        if (currentValue !== 0 || showReady) {
-          setShowReady(false);
-          setCurrentValue(0); // This will show "GO"
-          setProgress(1); // Circle fully filled
-        }
-        
-        // Complete after showing "GO" briefly
-        setTimeout(() => {
-          onPreparationComplete();
-        }, 800);
-        
-        clearInterval(interval);
-      }
-    }, 50); // Update every 50ms for smoother progress
+      }, 50); // Update every 50ms for smoother progress
+    }, 300); // 300ms delay before starting countdown to allow screen transition
 
-    return () => clearInterval(interval);
+    // Cleanup function to clear both timeout and interval
+    return () => {
+      clearTimeout(startDelay);
+      if (interval) clearInterval(interval);
+    };
   }, [preparationTime, onPreparationComplete]);
 
   const handleCancel = () => {
@@ -114,6 +125,7 @@ const PreparationScreen: React.FC<PreparationScreenProps> = ({
         progress={progress}
         onCancel={handleCancel}
         showReady={showReady}
+        progressAnimationDuration={400} // Smooth animation while maintaining sync
       />
     </View>
   );

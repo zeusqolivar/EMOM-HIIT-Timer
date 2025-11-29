@@ -6,6 +6,7 @@ import {
   Dimensions,
   TouchableOpacity,
   Animated,
+  Easing,
 } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -19,6 +20,9 @@ interface CircularTimerProps {
   size?: number;
   strokeWidth?: number;
   showReady?: boolean;
+  // Use faster animation for countdown timers (preparation/cooldown)
+  // Default 700ms is good for workout intervals, but countdown needs to be snappier
+  progressAnimationDuration?: number;
 }
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -31,6 +35,7 @@ const CircularTimer: React.FC<CircularTimerProps> = ({
   size = 280,
   strokeWidth = 20,
   showReady = true,
+  progressAnimationDuration = 700, // Default to smooth animation for workout intervals
 }) => {
   const scaleAnim = useRef(new Animated.Value(1.0)).current;
   const opacityAnim = useRef(new Animated.Value(1.0)).current;
@@ -40,13 +45,16 @@ const CircularTimer: React.FC<CircularTimerProps> = ({
   const circumference = 2 * Math.PI * radius;
 
   useEffect(() => {
-    // Animate progress with easeInOut over 0.7 seconds (matching SwiftUI)
+    // Animate progress - duration can be customized based on timer type
+    // Longer duration (700ms) for smooth workout intervals
+    // Shorter duration (300-400ms) for smooth countdown timers
     Animated.timing(progressAnim, {
       toValue: progress,
-      duration: 700, // Match SwiftUI .easeInOut(duration: 0.7)
+      duration: progressAnimationDuration,
+      easing: Easing.out(Easing.ease), // Smooth deceleration for natural feel
       useNativeDriver: false, // SVG properties can't use native driver
     }).start();
-  }, [progress, progressAnim]);
+  }, [progress, progressAnim, progressAnimationDuration]);
 
   useEffect(() => {
     if (showReady) {

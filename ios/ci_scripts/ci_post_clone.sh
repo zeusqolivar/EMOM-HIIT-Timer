@@ -68,17 +68,17 @@ yarn install --frozen-lockfile || {
 echo "===== Installing iOS CocoaPods ====="
 cd ios
 
-# Clean up any existing pods
-echo "Cleaning up existing Pods..."
-rm -rf Pods Podfile.lock
+# Only clean Podfile.lock (keep Pods for faster incremental builds in CI)
+# Xcode Cloud typically starts fresh anyway
+if [ -f "Podfile.lock" ]; then
+  echo "Removing existing Podfile.lock..."
+  rm -f Podfile.lock
+fi
 
-# Update CocoaPods repo
-echo "Updating CocoaPods repo..."
-pod repo update
-
-# Install pods
+# Install pods WITHOUT repo update for faster CI builds
+# CocoaPods uses CDN by default (since 1.8+) which doesn't require repo updates
 echo "Installing CocoaPods dependencies..."
-pod install --verbose
+pod install
 
 # Verify installation
 if [ ! -d "Pods" ]; then
@@ -86,11 +86,6 @@ if [ ! -d "Pods" ]; then
   exit 1
 fi
 
-if [ ! -f "*.xcworkspace" ]; then
-  echo "WARNING: No .xcworkspace file found"
-  ls -la *.xc* || echo "No Xcode project files found"
-fi
-
 echo "===== Build preparation completed successfully ====="
-echo "Pods installed: $(ls -1 Pods | wc -l | tr -d ' ') directories"
-echo "Workspace files: $(ls -1 *.xcworkspace 2>/dev/null || echo 'None found')"
+echo "Pods installed successfully"
+echo "Workspace: $(ls -1 *.xcworkspace 2>/dev/null || echo 'None found')"
